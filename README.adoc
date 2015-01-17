@@ -1,0 +1,162 @@
+= Rake tasks for Jekyll
+Jakub Jirutka <https://github.com/jirutka[@jirutka]>
+:page-layout: base
+:idprefix:
+ifdef::env-github[:idprefix: user-content-]
+:idseparator: -
+// custom
+:gem-name: rake-jekyll
+:gh-name: jirutka/{gem-name}
+:gh-branch: master
+:badge-style: flat
+
+image:https://inch-ci.org/github/{gh-name}.svg?branch={gh-branch}&style={badge-style}[Inline docs, link="http://inch-ci.org/github/{gh-name}"]
+image:https://img.shields.io/gem/v/{gem-name}.svg?style={badge-style}[Gem Version, link="https://rubygems.org/gems/{gem-name}"]
+image:https://img.shields.io/badge/yard-docs-blue.svg?style={badge-style}[Yard Docs, link="http://www.rubydoc.info/github/{gh-name}/frames"]
+
+
+== Installation
+
+Add this line to your application’s Gemfile:
+
+  gem 'rake-jekyll'
+
+and then execute:
+
+  $ bundle
+
+
+== Tasks
+
+=== Deploy to Git
+
+This task builds the Jekyll site and deploys it to a remote Git repository.
+
+==== Usage
+
+The most simple usage suitable for GitHub and Travis CI:
+
+[source, ruby]
+----
+require 'rake-jekyll'
+
+Rake::Jekyll::GitDeployTask.new
+----
+
+This listing introduces all the configurable options with their default values:
+
+[source, ruby]
+----
+require 'rake-jekyll'
+
+Rake::Jekyll::GitDeployTask.new(:deploy) do |t|
+
+  # Description of the rake task.
+  t.description = 'Generate the site and push changes to remote repository'
+
+  # Overrides the *author* of the commit being created with author of the
+  # source commit (i.e. HEAD in the current branch).
+  t.author = -> {
+    `git log -n 1 --format='%aN <%aE>'`.strip
+  }
+  # Overrides the *author date* of the commit being created with date of the
+  # source commit.
+  t.author_date = -> {
+    `git log -n 1 --format='%aD'`.strip
+  }
+  # The commit message will contain hash of the source commit.
+  t.commit_message = -> {
+    "Built from #{`git rev-parse --short HEAD`.strip}"
+  }
+  # Use 'Jekyll' as the default *committer* name (with empty email) when the
+  # user.name is not set in git config.
+  t.committer = 'Jekyll'
+
+  # Deploy the built site into remote branch named 'gh-pages'. It will be
+  # automatically created if not exist yet.
+  t.deploy_branch = 'gh-pages'
+
+  # Run this command to build the site.
+  t.jekyll_build = ->(dest_dir) {
+    system "bundle exec jekyll build --destination #{dest_dir}"
+  }
+  # Use the default committer (configured in git) when available.
+  t.override_committer = false
+
+  # Use URL of the 'origin' remote to fetch/push the built site into. If env.
+  # variable GH_TOKEN is set, then it adds it as a userinfo to the URL.
+  t.remote_url = -> {
+    `git config remote.origin.url`.strip.gsub(/^git:/, 'https:').tap do |url|
+      url.gsub!(%r{^https://}, "https://#{ENV['GH_TOKEN']}@") if ENV.key? 'GH_TOKEN'
+    end
+  }
+  # Skip commit and push when building a pull request or env. variable
+  # SKIP_COMMIT represents truthy.
+  t.skip_commit = -> {
+    ENV['TRAVIS_PULL_REQUEST'].to_i > 0 ||
+      %w[yes y true 1].include?(ENV['SKIP_COMMIT'].to_s.downcase)
+  }
+end
+----
+
+Note: All options except `name` and `description` accepts both String and Proc as a value.
+
+
+==== Setup for GitHub Pages and Travis CI
+
+. Create or edit file `Rakefile` in your Jekyll repository:
++
+[source, ruby]
+----
+require 'rake-jekyll'
+
+Rake::Jekyll::GitDeployTask.new(:deploy)
+----
+. Install travis gem:
++
+  $ gem install travis
++
+. Create file `.travis.yml` in the root of your Jekyll repository:
++
+[source, yaml]
+----
+language: ruby
+sudo: false
+rvm: 2.2.0
+script: bundle exec rake deploy
+----
+. Enable Travis CI for your Jekyll repository:
+.. open your https://travis-ci.org/profile/[profile page] on Travis,
+.. find the repository and turn on the switch,
+.. then click on repository settings (next to the switch) and enable “Build only if .travis.yml is present.”
+. Generate a new personal access token on GitHub:
+.. open https://github.com/settings/tokens/new[this page] to generate a new personal access token,
+.. select the scope _public_repo_, fill some description and confirm.
+. Encrypt the token and add it to your `.travis.yml`:
+.. replace `<token>` with the GitHub token and execute:
++
+  $ travis encrypt GH_TOKEN=<token> --add env.global
++
+.. and check that it added something like the following to `.travis.yml`:
++
+[source, yaml]
+----
+env:
+  global:
+    secure: YOUR-ENCRYPTED-TOKEN
+----
+. Commit changes, push to GitHub and check that Travis has started the job and finished it successfully.
+
+
+== Contributing
+
+1. Fork it.
+2. Create your feature branch (`git checkout -b my-new-feature`).
+3. Commit your changes (`git commit -am 'Add some feature'`).
+4. Push to the branch (`git push origin my-new-feature`).
+5. Create a new Pull Request.
+
+
+== License
+
+This project is licensed under http://opensource.org/licenses/MIT/[MIT License]. For the full text of the license, see the link:LICENSE[LICENSE] file.
