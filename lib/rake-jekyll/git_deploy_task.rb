@@ -242,13 +242,18 @@ module Rake::Jekyll
           jekyll_build[temp_dir]
 
           Dir.chdir temp_dir do
-            abort 'Nothing to commit.' unless any_changes?
-            abort 'Skipping commit.' if skip_commit?
+            unless any_changes?
+              puts 'Nothing to commit.'; next
+            end
+
+            if skip_commit?
+              puts 'Skipping commit.'; next
+            end
 
             if override_committer? || !config_set?('user.name')
               config_user_set committer
             end
-
+            exit
             commit_all commit_message, author, author_date
             push remote_url, deploy_branch
           end
