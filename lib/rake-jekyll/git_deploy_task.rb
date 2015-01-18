@@ -253,7 +253,7 @@ module Rake::Jekyll
             if override_committer? || !config_set?('user.name')
               config_user_set committer
             end
-            exit
+
             commit_all commit_message, author, author_date
             push remote_url, deploy_branch
           end
