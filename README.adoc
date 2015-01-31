@@ -104,6 +104,16 @@ Note: All options except `name` and `description` accepts both String and Proc a
 
 ==== Setup for GitHub Pages and Travis CI
 
+. Create or edit file `Gemfile` in your Jekyll repository:
++
+[source, ruby]
+----
+source 'https://rubygems.org'
+
+gem 'jekyll'
+gem 'rake'
+gem 'rake-jekyll'
+----
 . Create or edit file `Rakefile` in your Jekyll repository:
 +
 [source, ruby]
