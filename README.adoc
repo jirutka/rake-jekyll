@@ -104,6 +104,14 @@ Note: All options except `name` and `description` accepts both String and Proc a
 
 ==== Setup for GitHub Pages and Travis CI
 
+You need two branches in your repository:
+
+* **master**, for markup sources and configuration. This branch can be named anything you choose.
+* **gh-pages**, for the generated static content produced by Travis CI. This branch will be created automatically for you when the task runs.
+
+The goal is to configure a Travis CI job to listen for commits on the _master_ branch, automatically run the Jekyll build, and push the generated content to the _gh-pages_ branch.
+After that, your site will be available at `http(s)://<username>.github.io/<projectname>`.
+
 . Create or edit file `Gemfile` in your Jekyll repository:
 +
 [source, ruby]
