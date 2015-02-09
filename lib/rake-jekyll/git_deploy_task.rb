@@ -191,7 +191,7 @@ module Rake::Jekyll
     ##
     # @!attribute [w] skip_commit
     # Whether to skip the commit and push phase.
-    # Default is to return +false+ when env variable +TRAVIS_PULL_REQUEST+
+    # Default is to return +true+ when env variable +TRAVIS_PULL_REQUEST+
     # is an integer value greater than 0 or +SKIP_COMMIT+ represents truthy
     # (i.e. contains yes, y, true, or 1).
     #
