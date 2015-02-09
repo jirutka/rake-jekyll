@@ -161,13 +161,13 @@ module Rake::Jekyll
     # @!attribute jekyll_build
     # Defines a function that executes Jekyll to build the site.
     # Defaults to:
-    #   sh "bundle exec jekyll build --destination #{dest_dir}"
+    #   Rake.sh "bundle exec jekyll build --destination #{dest_dir}"
     #
     # @return [Proc] a Proc that accepts one argument; the destination
     #   directory to generate the site into.
     #
     callable_attr :jekyll_build, ->(dest_dir) {
-      system "bundle exec jekyll build --destination #{dest_dir}"
+      Rake.sh "bundle exec jekyll build --destination #{dest_dir}"
     }
 
     ##
