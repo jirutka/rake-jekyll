@@ -78,7 +78,7 @@ Rake::Jekyll::GitDeployTask.new(:deploy) do |t|
 
   # Run this command to build the site.
   t.jekyll_build = ->(dest_dir) {
-    system "bundle exec jekyll build --destination #{dest_dir}"
+    Rake.sh "bundle exec jekyll build --destination #{dest_dir}"
   }
   # Use the default committer (configured in git) when available.
   t.override_committer = false
