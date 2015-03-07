@@ -241,22 +241,27 @@ module Rake::Jekyll
           puts "\nRunning Jekyll..."
           jekyll_build[temp_dir]
 
-          Dir.chdir temp_dir do
-            unless any_changes?
-              puts 'Nothing to commit.'; next
-            end
-
-            if skip_commit?
-              puts 'Skipping commit.'; next
-            end
-
-            if override_committer? || !config_set?('user.name')
-              config_user_set committer
-            end
-
-            commit_all commit_message, author, author_date
-            push remote_url, deploy_branch
+          if ENV['TRAVIS_PULL_REQUEST'].to_i > 0
+            puts 'Pull request detected. Skipping deployment.'
           end
+            Dir.chdir temp_dir do
+              unless any_changes?
+                puts 'Nothing to commit.'; next
+              end
+
+              if skip_commit?
+                puts 'Skipping commit.'; next
+              end
+
+              if override_committer? || !config_set?('user.name')
+                config_user_set committer
+              end
+
+              commit_all commit_message, author, author_date
+              push remote_url, deploy_branch
+            end
+          end
+
         end
       end
     end
