@@ -12,7 +12,7 @@ ifdef::env-github[:idprefix: user-content-]
 
 image:https://inch-ci.org/github/{gh-name}.svg?branch={gh-branch}&style={badge-style}[Inline docs, link="http://inch-ci.org/github/{gh-name}"]
 image:https://img.shields.io/gem/v/{gem-name}.svg?style={badge-style}[Gem Version, link="https://rubygems.org/gems/{gem-name}"]
-image:https://img.shields.io/badge/yard-docs-blue.svg?style={badge-style}[Yard Docs, link="http://www.rubydoc.info/github/{gh-name}/frames"]
+image:https://img.shields.io/badge/yard-docs-blue.svg?style={badge-style}[Yard Docs, link="http://www.rubydoc.info/github/{gh-name}/{gh-branch}"]
 
 
 == Installation
