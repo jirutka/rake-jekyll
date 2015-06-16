@@ -1,5 +1,6 @@
 require 'rake/tasklib'
 require 'tmpdir'
+require 'uri'
 
 module Rake::Jekyll
   ##
@@ -55,6 +56,16 @@ module Rake::Jekyll
         sh "git push -q #{remote_url} #{branch}:#{branch}"
       end
 
+      ##
+      # Runs the system command +cmd+ using +Rake.sh+, but filters sensitive
+      # data (userinfo part of URIs) in the output message.
+      def sh(*cmd, &block)
+        Rake.rake_output_message(filter_sensitive_data(cmd.join(' '))) if verbose
+        verbose false do
+          Rake.sh(*cmd, &block)
+        end
+      end
+
       private
 
       def parse_name_email(str)
@@ -62,6 +73,13 @@ module Rake::Jekyll
           matched[1..2].map do |val|
             val.strip.empty? ? nil : val.strip if val
           end
+        end
+      end
+
+      def filter_sensitive_data(str)
+        URI.extract(str).each_with_object(str.dup) do |uri, s|
+          filtered = URI.parse(uri).tap { |u| u.userinfo &&= '***:***' }.to_s
+          s.gsub!(uri, filtered)
         end
       end
     end
