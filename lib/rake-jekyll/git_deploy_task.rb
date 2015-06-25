@@ -95,14 +95,16 @@ module Rake::Jekyll
     # @param attr_name [#to_s] name of the attribute to define.
     # @param default_value [Object] the default value (optional).
     # @yield When the block is given, then it's used as a default value.
-    #   It takes precedence over +default_value+.
+    #   It takes precedence over the +default_value+. It's evaluated in an
+    #   instance context.
     def self.callable_attr(attr_name, default_value = nil, &default_block)
       var_name = "@#{attr_name}".sub('?', '').to_sym
 
       define_method attr_name do
         value = instance_variable_get(var_name)
+
         if value.nil? && default_block
-          do_in_working_dir &default_block
+          do_in_working_dir { instance_eval &default_block }
         elsif value.nil?
           default_value
         elsif value.is_a?(Proc) && value.arity.zero?
