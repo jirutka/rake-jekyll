@@ -220,14 +220,16 @@ module Rake::Jekyll
     # @!attribute [w] skip_commit
     # Whether to skip the commit and push phase.
     # Default is to return +true+ when env variable +TRAVIS_PULL_REQUEST+
-    # is an integer value greater than 0 or +SKIP_COMMIT+ represents truthy
-    # (i.e. contains yes, y, true, or 1).
+    # is an integer value greater than 0, +SKIP_COMMIT+ represents truthy
+    # (i.e. contains yes, y, true, or 1), or +SOURCE_BRANCH+ is set and does
+    # not match +TRAVIS_BRANCH+.
     #
-    # @return [Boolean, Proc]
+    # @return [Boolean, Proc] skip deploy?
     #
     callable_attr :skip_commit? do
       ENV['TRAVIS_PULL_REQUEST'].to_i > 0 ||
-        %w[yes y true 1].include?(ENV['SKIP_COMMIT'].to_s.downcase)
+        %w[yes y true 1].include?(ENV['SKIP_COMMIT'].to_s.downcase) ||
+        (ENV['SOURCE_BRANCH'] && ENV['SOURCE_BRANCH'] != ENV['TRAVIS_BRANCH'])
     end
 
     ##
