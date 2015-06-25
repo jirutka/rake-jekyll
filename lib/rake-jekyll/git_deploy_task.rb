@@ -198,14 +198,22 @@ module Rake::Jekyll
 
     ##
     # @!attribute remote_url
-    # @return [String, Proc] URL of the remote git repository to fetch and push
-    #   the built site into. The default is to use URL of the +origin+ remote,
-    #   replace +git:+ schema with +https:+ and add environment variable
-    #   +GH_TOKEN+ as an userinfo (if exists).
+    # Defines URL of the remote git repository to pull and push the built site
+    # into. The default is to use URL of the +origin+ remote and:
+    #
+    # a. if {#ssh_key_file} is readable, then convert URL to SSH address with
+    #    user +git+;
+    # b. or if environment variable +GT_TOKEN+ is set, then replace +git:+
+    #    schema with +https:+ and add +GH_TOKEN+ as an userinfo.
+    # c. else use remote URL as is.
+    #
+    # @return [String, Proc] URL of the target git repository.
+    #
     callable_attr :remote_url do
-      `git config remote.origin.url`.strip.gsub(/^git:/, 'https:').tap do |url|
-        url.gsub!(%r{^https://}, "https://#{ENV['GH_TOKEN']}@") if ENV.key? 'GH_TOKEN'
-      end
+      url = `git config remote.origin.url`.strip.gsub(/^git:/, 'https:')
+      next url.gsub(%r{^https://([^/]+)/(.*)$}, 'git@\1:\2') if ssh_key_file?
+      next url.gsub(%r{^https://}, "https://#{ENV['GH_TOKEN']}@") if ENV.key? 'GH_TOKEN'
+      next url
     end
 
     ##
@@ -222,6 +230,18 @@ module Rake::Jekyll
         %w[yes y true 1].include?(ENV['SKIP_COMMIT'].to_s.downcase)
     end
 
+    ##
+    # @!attribute ssh_key_file
+    # Defines path of the private SSH key to be used for communication with
+    # {#remote_url}. This is optional; when the file doesn't exist, then it's
+    # ignored.
+    #
+    # @note NEVER STORE YOUR PRIVATE SSH KEY IN THE REPOSITORY UNENCRYPTED!
+    #
+    # @return [String, Proc] path of the private SSH key (default: +.deploy_key+).
+    #
+    callable_attr :ssh_key_file, '.deploy_key'
+
 
     ##
     # @param name [#to_sym] name of the task to define.
@@ -232,6 +252,10 @@ module Rake::Jekyll
       @working_dir = Dir.pwd
 
       yield self if block_given?
+
+      if ssh_key_file?
+        ENV['GIT_SSH_COMMAND'] = "ssh -i '#{@working_dir}/#{ssh_key_file}'"
+      end
 
       define_task!
     end
@@ -285,6 +309,10 @@ module Rake::Jekyll
       Dir.chdir @working_dir do
         yield
       end
+    end
+
+    def ssh_key_file?
+      File.readable?(ssh_key_file)
     end
   end
 end
