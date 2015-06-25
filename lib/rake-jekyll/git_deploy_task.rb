@@ -217,20 +217,24 @@ module Rake::Jekyll
     end
 
     ##
-    # @!attribute [w] skip_commit
+    # @!attribute [w] skip_deploy
     # Whether to skip the commit and push phase.
     # Default is to return +true+ when env variable +TRAVIS_PULL_REQUEST+
-    # is an integer value greater than 0, +SKIP_COMMIT+ represents truthy
+    # is an integer value greater than 0, +SKIP_DEPLOY+ represents truthy
     # (i.e. contains yes, y, true, or 1), or +SOURCE_BRANCH+ is set and does
     # not match +TRAVIS_BRANCH+.
     #
     # @return [Boolean, Proc] skip deploy?
     #
-    callable_attr :skip_commit? do
+    callable_attr :skip_deploy? do
       ENV['TRAVIS_PULL_REQUEST'].to_i > 0 ||
-        %w[yes y true 1].include?(ENV['SKIP_COMMIT'].to_s.downcase) ||
+        %w[yes y true 1].include?((ENV['SKIP_DEPLOY'] || ENV['SKIP_COMMIT']).to_s.downcase) ||
         (ENV['SOURCE_BRANCH'] && ENV['SOURCE_BRANCH'] != ENV['TRAVIS_BRANCH'])
     end
+
+    # For backward compatibility, remove in 2.x.
+    alias_method :skip_commit?, :skip_deploy?
+    alias_method :skip_commit=, :skip_deploy=
 
     ##
     # @!attribute ssh_key_file
@@ -289,11 +293,11 @@ module Rake::Jekyll
 
           Dir.chdir temp_dir do
             unless any_changes?
-              puts 'Nothing to commit.'; next
+              puts 'Nothing to commit and deploy.'; next
             end
 
-            if skip_commit?
-              puts 'Skipping commit.'; next
+            if skip_deploy?
+              puts 'Skipping deploy.'; next
             end
 
             if override_committer? || !config_set?('user.name')
