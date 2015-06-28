@@ -260,7 +260,8 @@ module Rake::Jekyll
       yield self if block_given?
 
       if ssh_key_file?
-        ENV['GIT_SSH_COMMAND'] = "ssh -i '#{@working_dir}/#{ssh_key_file}'"
+        ENV['SSH_PRIVATE_KEY'] = "#{@working_dir}/#{ssh_key_file}"
+        ENV['GIT_SSH'] = "#{BIN_DIR}/git-ssh-wrapper"
       end
 
       define_task!

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ -z "$SSH_PRIVATE_KEY" ]; then
+    ssh "$@"
+else
+    ssh -i "$SSH_PRIVATE_KEY" "$@"
+fi
