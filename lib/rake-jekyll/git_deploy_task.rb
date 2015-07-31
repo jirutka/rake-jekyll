@@ -173,9 +173,13 @@ module Rake::Jekyll
     # If the remote branch doesn't exist yet, then it's automatically created
     # as an orphan branch.
     #
-    # @return [String, Proc] name of the remote branch (default: +gh-pages+).
+    # @return [String, Proc] name of the remote branch. Defaults to +gh-page+,
+    #   or +master+ if the _remote_url_ matches `#{gh_user}.github.io.git`.
     #
-    callable_attr :deploy_branch, 'gh-pages'
+    callable_attr :deploy_branch do
+      gh_user = ENV['TRAVIS_REPO_SLUG'].to_s.split('/').first
+      remote_url.match(/[:\/]#{gh_user}\.github\.io\.git$/) ? 'master' : 'gh-pages'
+    end
 
     ##
     # @!attribute jekyll_build
