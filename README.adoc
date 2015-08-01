@@ -157,6 +157,12 @@ script: bundle exec rake deploy
 .. open your https://travis-ci.org/profile/[profile page] on Travis,
 .. find the repository and turn on the switch,
 .. then click on repository settings (next to the switch) and enable “Build only if .travis.yml is present.”
+
+Now you can choose if you want to use GitHub token (an easier way), or a deploy key (more secure way).
+
+===== A. Use GitHub token
+
+[start=6]
 . Generate a new personal access token on GitHub:
 .. open https://github.com/settings/tokens/new[this page] to generate a new personal access token,
 .. select the scope _public_repo_, fill some description and confirm.
@@ -173,6 +179,46 @@ env:
   global:
     secure: YOUR-ENCRYPTED-TOKEN
 ----
++
+. Commit changes, push to GitHub and check that Travis has started the job and finished it successfully.
+
+===== B. Use SSH deploy key
+
+[start=6]
+. Generate new RSA key pair and write it to file `.deploy_key` (and `.deploy_key.pub`) in the root of your Jekyll repository:
++
+  $ ssh-keygen -N '' -f .deploy_key
++
+. Encrypt the private key and add it to your `.travis.yml`:
+.. encrypt the key:
++
+  $ travis encrypt-file .deploy_key --add
++
+.. check that it created file `.deploy_key.enc` and added something like the following to `.travis.yml`:
++
+[source, yaml]
+----
+before_install:
+  - openssl aes-256-cbc -K $encrypted_e18dd77852c2_key -iv $encrypted_e18dd77852c2_iv -in .deploy_key.enc -out .deploy_key -d
+----
++
+.. and add command `chmod 600 .deploy_key` to `.travis.yml` after the `openssl` command, so you will end with something like:
++
+[source, yaml]
+----
+before_install:
+  - openssl aes-256-cbc -K $encrypted_e18dd77852c2_key -iv $encrypted_e18dd77852c2_iv -in .deploy_key.enc -out .deploy_key -d
+  - chmod 600 .deploy_key
+----
++
+. Add `.deploy_key` to `.gitignore` (this is unencrypted private key, keep it in secret!):
++
+  $ echo '.deploy_key' >> .gitignore
++
+. Register the generated key as a deploy key in your GitHub repository:
+.. open `https://github.com/<username>/<reponame>/settings/keys` and click on _Add deploy key_,
+.. paste content of the `.deploy_key.pub` file to the textbox,
+.. select “Allow write access” and confirm.
 . Commit changes, push to GitHub and check that Travis has started the job and finished it successfully.
 
 
