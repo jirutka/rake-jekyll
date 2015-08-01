@@ -79,10 +79,10 @@ Rake::Jekyll::GitDeployTask.new(:deploy) do |t|
     gh_user = ENV['TRAVIS_REPO_SLUG'].to_s.split('/').first
     remote_url.match(/[:\/]#{gh_user}\.github\.io\.git$/) ? 'master' : 'gh-pages'
   }
-
   # Run this command to build the site.
-  t.jekyll_build = ->(dest_dir) {
-    Rake.sh "bundle exec jekyll build --destination #{dest_dir}"
+  t.build_script = ->(dest_dir) {
+    puts "\nRunning Jekyll..."
+    sh "bundle exec jekyll build --destination #{dest_dir}"
   }
   # Use the default committer (configured in git) when available.
   t.override_committer = false

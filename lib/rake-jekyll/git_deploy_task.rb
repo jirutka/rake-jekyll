@@ -182,17 +182,23 @@ module Rake::Jekyll
     end
 
     ##
-    # @!attribute jekyll_build
+    # @!attribute build_script
     # Defines a function that executes Jekyll to build the site.
     # Defaults to:
+    #   puts "\nRunning Jekyll..."
     #   Rake.sh "bundle exec jekyll build --destination #{dest_dir}"
     #
     # @return [Proc] a Proc that accepts one argument; the destination
     #   directory to generate the site into.
     #
-    callable_attr :jekyll_build, ->(dest_dir) {
+    callable_attr :build_script, ->(dest_dir) {
+      puts "\nRunning Jekyll..."
       Rake.sh "bundle exec jekyll build --destination #{dest_dir}"
     }
+
+    # For backward compatibility, remove in 2.x.
+    alias_method :jekyll_build, :build_script
+    alias_method :jekyll_build=, :build_script=
 
     ##
     # @!attribute override_committer?
@@ -293,8 +299,7 @@ module Rake::Jekyll
             end
           end
 
-          puts "\nRunning Jekyll..."
-          jekyll_build[temp_dir]
+          build_script.call(temp_dir)
 
           Dir.chdir temp_dir do
             unless any_changes?
