@@ -274,6 +274,10 @@ module Rake::Jekyll
         ENV['GIT_SSH'] = "#{BIN_DIR}/git-ssh-wrapper"
       end
 
+      if !ENV.key?('GH_TOKEN') && !ssh_key_file?
+        puts "\nWarning: Neither GH_TOKEN variable nor #{ssh_key_file} file exist!"
+      end
+
       define_task!
     end
 
